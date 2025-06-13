@@ -1,24 +1,28 @@
 import streamlit as st
 from openai import OpenAI
+from dotenv import load_dotenv
+import datetime
+import os
+
+
 
 # Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
-)
+st.set_page_config(page_title="Nurse Assistant", page_icon="💊")
+st.title(st.secrets["openai"]["APP_TITLE"])
 
 # Ask user for their OpenAI API key via `st.text_input`.
 # Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
 # via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
+
+load_dotenv()
+OPENAI_API_KEY = st.secrets["openai"]["OPENAI_API_KEY"] if "openai" else os.getenv("OPENAI_API_KEY")
+
+if not OPENAI_API_KEY:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
 
     # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     # Create a session state variable to store the chat messages. This ensures that the
     # messages persist across reruns.
@@ -54,3 +58,31 @@ else:
         with st.chat_message("assistant"):
             response = st.write_stream(stream)
         st.session_state.messages.append({"role": "assistant", "content": response})
+
+
+# Convert messages to a clean string
+def format_conversation(messages):
+    lines = []
+    for msg in messages:
+        role = "Nurse" if msg["role"] == "user" else "Assistant"
+        lines.append(f"{role}: {msg['content']}\n")
+    return "\n".join(lines)
+
+# Create download button
+if st.session_state.messages:
+    conversation_text = format_conversation(st.session_state.messages)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"nurse_conversation_{timestamp}.txt"
+    
+
+    if st.button("🔁 End Conversation"):
+        st.download_button(
+            label="📥 Download Conversation",
+            data=conversation_text,
+            file_name=filename,
+            mime="text/plain"
+        )
+
+if st.button("🔁 Reset Conversation"):
+    st.session_state.messages = []
+    st.experimental_rerun()
