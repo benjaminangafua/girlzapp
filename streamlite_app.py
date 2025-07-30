@@ -10,7 +10,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 st.set_page_config(page_title="GirlzApp+ Chatbot", page_icon="💬")
 
-st.title("💬 GirlzApp+ – Adolescent Health Chatbot")
+st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("Welcome! Ask me anything about your health, body, or services near you.")
 
 # Sidebar for static educational content
