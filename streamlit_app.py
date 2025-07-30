@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment")
+
 client = openai.OpenAI(api_key=api_key)
 
 st.set_page_config(page_title="GirlzApp+ Chatbot", page_icon="💬")
