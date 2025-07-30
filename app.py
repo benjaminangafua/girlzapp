@@ -1,88 +1,77 @@
 import streamlit as st
-from openai import OpenAI
-from dotenv import load_dotenv
-import datetime
+import openai 
 import os
+from dotenv import load_dotenv
 
-
-
-# Show title and description.
-st.set_page_config(page_title="Nurse Assistant", page_icon="💊")
-st.title(st.secrets["openai"]["APP_TITLE"])
-
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-
+client = openai.OpenAI()
+# Load API key
 load_dotenv()
-OPENAI_API_KEY = st.secrets["openai"]["OPENAI_API_KEY"] if "openai" else os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-if not OPENAI_API_KEY:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+st.set_page_config(page_title="GirlzApp+ Chatbot", page_icon="💬")
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=OPENAI_API_KEY)
+st.title("💬 GirlzApp+ – Adolescent Health Chatbot")
+st.write("Welcome! Ask me anything about your health, body, or services near you.")
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Sidebar for static educational content
+with st.sidebar:
+    st.header("📚 SRH Education Modules")
+    topics = {
+        "Menstrual Health": "Your period is a natural part of growing up...",
+        "Contraception": "Contraceptives help prevent pregnancy...",
+        "Mental Health": "It’s okay not to be okay. Let’s talk about your emotions...",
+        "STIs": "Sexually transmitted infections can be prevented and treated..."
+    }
+    for title, content in topics.items():
+        if st.button(title):
+            st.session_state["chat_history"] = st.session_state.get("chat_history", []) + [(f"📘 {title}", content)]
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Referral system: static examples
+referral_services = {
+    "Kolahun Health Center": {
+        "Location": "Kolahun, Lofa County",
+        "Services": "SRH Counseling, Contraceptives, Mental Health Support",
+        "Hours": "Mon–Fri, 8am–4pm"
+    },
+    "Zorzor Youth Clinic": {
+        "Location": "Zorzor, Lofa County",
+        "Services": "Pregnancy Testing, STI Treatment, Peer Counseling",
+        "Hours": "Mon–Sat, 9am–3pm"
+    }
+}
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+# Initialize chat history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+# Chat input
+user_input = st.chat_input("Type your anonymous question or 'referral <location>'...")
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
+if user_input:
+    st.session_state.chat_history.append(("You", user_input))
+
+    if "referral" in user_input.lower():
+        location = user_input.lower().split("referral")[-1].strip().capitalize()
+        found = False
+        for name, info in referral_services.items():
+            if location in name:
+                response = f"🏥 **{name}**\n📍 {info['Location']}\n🩺 Services: {info['Services']}\n🕒 Hours: {info['Hours']}"
+                st.session_state.chat_history.append(("Bot", response))
+                found = True
+                break
+        if not found:
+            st.session_state.chat_history.append(("Bot", "Sorry, I couldn't find any referral info for that location."))
+    else:
+        with st.spinner("Thinking..."):
+            response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": "You're a friendly, respectful chatbot helping Liberian adolescents with health and SRH-related questions."}] +
+                    [{"role": "user" if sender == "You" else "assistant", "content": msg} for sender, msg in st.session_state.chat_history]
         )
+            answer = response.choices[0].message.content
+            st.session_state.chat_history.append(("Bot", answer))
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-
-# Convert messages to a clean string
-def format_conversation(messages):
-    lines = []
-    for msg in messages:
-        role = "Nurse" if msg["role"] == "user" else "Assistant"
-        lines.append(f"{role}: {msg['content']}\n")
-    return "\n".join(lines)
-
-# Create download button
-if st.session_state.messages:
-    conversation_text = format_conversation(st.session_state.messages)
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"nurse_conversation_{timestamp}.txt"
-    
-
-    if st.button("🔁 End Conversation"):
-        st.download_button(
-            label="📥 Download Conversation",
-            data=conversation_text,
-            file_name=filename,
-            mime="text/plain"
-        )
-
-if st.button("🔁 Reset Conversation"):
-    st.session_state.messages = []
-    st.experimental_rerun()
+# Display chat history
+for sender, msg in st.session_state.chat_history:
+    with st.chat_message("user" if sender == "You" else "assistant"):
+        st.markdown(msg)

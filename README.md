@@ -21,4 +21,5 @@ A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
 ```sh
 xcode-select --install
 pip install watchdog
+pip install --upgrade openai
 ```
