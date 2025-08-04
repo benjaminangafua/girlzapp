@@ -1,36 +1,72 @@
 import streamlit as st
-import openai 
+import openai
 import os
 from dotenv import load_dotenv
+from PIL import Image
 
-# Load API key
+# Load environment variables
 load_dotenv()
 
+# Load OpenAI API key
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise ValueError("OPENAI_API_KEY not found in environment")
-
 client = openai.OpenAI(api_key=api_key)
 
-st.set_page_config(page_title="GirlzApp+ Chatbot", page_icon="💬")
+# Load favicon image
+favicon = Image.open("assets/favicon.jpg")  # or replace with your correct path/image name
 
+# Set page configuration
+st.set_page_config(
+    page_title="GirlzApp+ Chatbot",
+    page_icon=favicon,
+    layout="centered"
+)
+
+# Title
 st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("Welcome! Ask me anything about your health, body, or services near you.")
 
-# Sidebar for static educational content
+# Initialize session states
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "active_topic" not in st.session_state:
+    st.session_state.active_topic = None
+if "last_topic_rendered" not in st.session_state:
+    st.session_state.last_topic_rendered = None
+
+# Educational topics
+topics = {
+    "Menstrual Health": "Your period is a natural part of growing up. It may start between ages 10 and 16. If you ever feel worried about it, I'm here to answer your questions!",
+    "Contraception": "Contraceptives help prevent pregnancy. There are many safe and effective options like pills, implants, and condoms. Let’s talk about what’s best for you.",
+    "Mental Health": "It’s okay not to be okay. Whether it’s stress, sadness, or anxiety, talking to someone is a powerful step. I’m here to listen and support.",
+    "STIs": "Sexually transmitted infections can be prevented and treated. It’s important to get tested and talk openly about protection and symptoms."
+}
+
+# Sidebar for educational menu
 with st.sidebar:
     st.header("📚 SRH Education Modules")
-    topics = {
-        "Menstrual Health": "Your period is a natural part of growing up...",
-        "Contraception": "Contraceptives help prevent pregnancy...",
-        "Mental Health": "It’s okay not to be okay. Let’s talk about your emotions...",
-        "STIs": "Sexually transmitted infections can be prevented and treated..."
-    }
-    for title, content in topics.items():
+    for title in topics:
         if st.button(title):
-            st.session_state["chat_history"] = st.session_state.get("chat_history", []) + [(f"📘 {title}", content)]
+            st.session_state.active_topic = title
 
-# Referral system: static examples
+# Inject selected topic into chat (toggle behavior)
+if st.session_state.active_topic and st.session_state.active_topic != st.session_state.last_topic_rendered:
+    topic = st.session_state.active_topic
+    # Remove old topic messages
+    st.session_state.chat_history = [
+        (sender, msg) for sender, msg in st.session_state.chat_history
+        if not (sender == "Bot" and msg.startswith("📘"))
+    ]
+    # Add new topic
+    st.session_state.chat_history.append((
+        "Bot",
+        f"📘 **{topic}**\n\n{topics[topic]}\n\n✅ If you have any questions about **{topic}**, just ask below!"
+    ))
+    # Update render tracker
+    st.session_state.last_topic_rendered = topic
+
+# Referral services
 referral_services = {
     "Kolahun Health Center": {
         "Location": "Kolahun, Lofa County",
@@ -44,12 +80,8 @@ referral_services = {
     }
 }
 
-# Initialize chat history
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# Chat input
-user_input = st.chat_input("Type your anonymous question or 'referral <location>'...")
+# User input
+user_input = st.chat_input("Start the conversation...")
 
 if user_input:
     st.session_state.chat_history.append(("You", user_input))
@@ -68,14 +100,19 @@ if user_input:
     else:
         with st.spinner("Thinking..."):
             response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "system", "content": "You're a friendly, respectful chatbot helping Liberian adolescents with health and SRH-related questions."}] +
-                    [{"role": "user" if sender == "You" else "assistant", "content": msg} for sender, msg in st.session_state.chat_history]
-        )
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You're a friendly, respectful chatbot helping Liberian adolescents with health and SRH-related questions."}
+                ] + [
+                    {"role": "user" if sender == "You" else "assistant", "content": msg}
+                    for sender, msg in st.session_state.chat_history
+                ]
+            )
             answer = response.choices[0].message.content
             st.session_state.chat_history.append(("Bot", answer))
 
-# Display chat history
-for sender, msg in st.session_state.chat_history:
-    with st.chat_message("user" if sender == "You" else "assistant"):
-        st.markdown(msg)
+# Scrollable chat rendering
+with st.container():
+    for sender, msg in st.session_state.chat_history:
+        with st.chat_message("user" if sender == "You" else "assistant"):
+            st.markdown(msg)
