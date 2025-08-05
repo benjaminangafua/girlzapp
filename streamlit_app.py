@@ -25,7 +25,18 @@ st.set_page_config(
 
 # Title
 st.title(st.secrets["openai"]["APP_TITLE"])
-st.write("Welcome! Ask me anything about your health, body, or services near you.")
+st.write("""
+Hey there 👋 Welcome to **GirlzApp+**, your private and friendly space to learn about your body, especially during puberty and your menstrual cycle.
+
+Here’s what you can explore from the menu:
+- 🩸 **Menstrual Health** – Learn what periods are, what’s normal, and how to manage them.
+- 🛡️ **Contraception** – Find out how to protect yourself and your future.
+- ❤️ **Mental Health** – Talk about your feelings and mental well-being.
+- 🦠 **STIs** – Get the truth about infections and how to stay safe.
+
+Click on any topic to learn more, or just ask a question below 👇
+""")
+
 
 # Initialize session states
 if "chat_history" not in st.session_state:
