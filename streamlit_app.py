@@ -26,7 +26,7 @@ st.set_page_config(
 # Title
 st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("""
-👋 Welcome to your safe space, GirlzApp+!
+### 👋 Welcome to your safe space, GirlzApp+!
 
 This is your private place to ask questions and get simple answers about your body and health.
 
@@ -36,7 +36,7 @@ From the menu, you can:
 - ❤️ Understand and manage your emotions.
 - 🦠 Stay safe from infections like STIs.
 
-Click a topic on the side or ask your question below. No shame, no judgment — just support. 💬
+Click a topic on the side or ask your question below. No shame, no judgment — just support.
 """)
 
 
