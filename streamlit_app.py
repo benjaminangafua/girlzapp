@@ -26,9 +26,13 @@ st.set_page_config(
 # Title
 st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("""
-Hey there 👋 Welcome to **GirlzApp+**, your private and friendly space to learn about your body, especially during puberty and your menstrual cycle.
+#🌸 GirlzApp+ Chatbot
+### Welcome to your safe space, Girl!
+I'm here just for you. Ask me anything about your body, your period, your emotions, or your rights.
+Want to track your cycle? Learn about birth control? Understand changes in your body?
+You’re in the right place. It’s private. It’s judgment-free. It’s made for you. 
 
-Here’s what you can explore from the menu:
+**Here’s what you can explore from the menu:**
 - 🩸 **Menstrual Health** – Learn what periods are, what’s normal, and how to manage them.
 - 🛡️ **Contraception** – Find out how to protect yourself and your future.
 - ❤️ **Mental Health** – Talk about your feelings and mental well-being.
