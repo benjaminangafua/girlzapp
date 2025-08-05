@@ -26,19 +26,19 @@ st.set_page_config(
 # Title
 st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("""
-### Welcome to your safe space, Girl!
-I'm here just for you. Ask me anything about your body, your period, your emotions, or your rights.
-Want to track your cycle? Learn about birth control? Understand changes in your body?
-You’re in the right place. It’s private. It’s judgment-free. It’s made for you. 
+👋 Welcome to your safe space, GirlzApp+!
 
-**Here’s what you can explore from the menu:**
-- 🩸 **Menstrual Health** – Learn what periods are, what’s normal, and how to manage them.
-- 🛡️ **Contraception** – Find out how to protect yourself and your future.
-- ❤️ **Mental Health** – Talk about your feelings and mental well-being.
-- 🦠 **STIs** – Get the truth about infections and how to stay safe.
+This is your private place to ask questions and get simple answers about your body and health.
 
-Click on any topic to learn more, or just ask a question below 👇
+From the menu, you can:
+- 🩸 Learn how to care for yourself during your period.
+- 🛡️ Find ways to protect yourself from pregnancy.
+- ❤️ Understand and manage your emotions.
+- 🦠 Stay safe from infections like STIs.
+
+Click a topic on the side or ask your question below. No shame, no judgment — just support. 💬
 """)
+
 
 
 # Initialize session states
