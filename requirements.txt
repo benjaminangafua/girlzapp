@@ -2,4 +2,4 @@ streamlit
 openai
 watchdog
 dotenv
-PIL
+Pillow
