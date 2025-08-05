@@ -26,7 +26,7 @@ st.set_page_config(
 # Title
 st.title(st.secrets["openai"]["APP_TITLE"])
 st.write("""
-#🌸 GirlzApp+ Chatbot
+# 🌸 GirlzApp+ Chatbot
 ### Welcome to your safe space, Girl!
 I'm here just for you. Ask me anything about your body, your period, your emotions, or your rights.
 Want to track your cycle? Learn about birth control? Understand changes in your body?
