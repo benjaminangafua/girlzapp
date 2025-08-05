@@ -18,7 +18,7 @@ favicon = Image.open("assets/favicon.jpg")  # or replace with your correct path/
 
 # Set page configuration
 st.set_page_config(
-    page_title="🌸 GirlzApp+ Chatbot",
+    page_title="GirlzApp+ Chatbot",
     page_icon=favicon,
     layout="centered"
 )
