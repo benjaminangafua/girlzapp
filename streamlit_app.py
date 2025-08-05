@@ -14,7 +14,7 @@ if not api_key:
 client = openai.OpenAI(api_key=api_key)
 
 # Load favicon image
-favicon = Image.open("assets/favicon.jpg")  # or replace with your correct path/image name
+favicon = Image.open("assets/favicon.png")  # or replace with your correct path/image name
 
 # Set page configuration
 st.set_page_config(
