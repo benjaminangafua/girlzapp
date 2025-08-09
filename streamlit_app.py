@@ -49,29 +49,56 @@ help_categories = {
     "🏥 Health Clinics": {
         "description": "Visit a nearby clinic for personal and private care.",
         "options": {
-            "Kolahun Health Center": {
-                "Location": "Kolahun, Lofa County",
+            "Hope For Women": {
+                "Location": "Paynesvillie",
                 "Services": "SRH Counseling, Contraceptives, Mental Health",
                 "Contact": "Nurse Martha – 0778 123 456"
-            },
-            "Zorzor Youth Clinic": {
-                "Location": "Zorzor, Lofa County",
+            }
+            ,
+            "ELWA Hospital": {
+                "Location": "Paynesvillie",
+                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
+                "Contact": "Dr. Massa – 0886 555 789"
+            }
+            ,
+            "JFK": {
+                "Location": "Sinkor",
                 "Services": "STI Testing, Pregnancy Support, Peer Counseling",
                 "Contact": "Mr. Gbessay – 0886 555 789"
+            }
+            ,
+            "Catholic Hospital": {
+                "Location": "Congo Town",
+                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
+                "Contact": "St. Theresa – 0886 555 789"
+            }
+            ,
+            "SOS Hospital": {
+                "Location": "Congo Town",
+                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
+                "Contact": "Mrs. Jallah – 0886 555 789"
             }
         }
     },
     "🏫 School Support": {
-        "description": "Talk to a teacher or school health worker.",
+        "description": "Talk to a school nurse.",
         "options": {
-            "Lorma High": {
-                "Location": "Zorzor",
+            "J.J Robert": {
+                "Location": "Sinkor",
                 "Contact": "Madam Teta – School Counselor – 0777 002 334"
             },
-            "Foya Junior School": {
-                "Location": "Foya",
-                "Contact": "Mr. Kpaye – Health Club Focal – 0888 998 123"
-            }
+            "Tubman High": {
+                "Location": "Sinkor",
+                "Contact": "Mrs. Kpaye – Health Club Focal – 0888 998 123"
+            },
+            "Voka Mission": {
+                "Location": "Paynesvillie",
+                "Contact": "Mrs. Leo – Health Club Focal – 0888 998 123"
+            },
+            "Best Brain": {
+                "Location": "Rehab",
+                "Contact": "Mrs. Jerome – Health Club Focal – 0888 998 123"
+            },
         }
     },
     "🤝 NGOs": {
@@ -84,6 +111,14 @@ help_categories = {
             "Liberia Youth Network": {
                 "Location": "Monrovia (online too)",
                 "Contact": "WhatsApp +231 777 111 222"
+            },
+            "Plan Liberia": {
+                "Location": "Monrovia (online too)",
+                "Contact": "WhatsApp +231 777 111 222"
+            },
+            "CSI": {
+                "Location": "Monrovia (online too)",
+                "Contact": "WhatsApp +231 777 111 222"
             }
         }
     },
@@ -94,6 +129,10 @@ help_categories = {
                 "Platform": "WhatsApp Chat",
                 "Contact": "+231 770 000 111"
             },
+            "Email": {
+                "Platform": "Gmail",
+                "Contact": "sos@girlzapp1.com"
+            },
             "GirlTalk": {
                 "Platform": "Web Chat",
                 "Contact": "https://girlzapp1.streamlit.app/"
@@ -101,18 +140,38 @@ help_categories = {
         }
     },
     "📱 Telemedicine": {
-        "description": "Call or video-chat a provider if you can’t visit.",
+        "description": "Call or video-chat a provider if you can’t visit. Consultations are private and confidential.",
         "options": {
             "DKT Healthline": {
                 "Service": "Phone & WhatsApp consultation",
+                "Contact": "+231 777 300 444"
+            },
+            "Video Chat": {
+                "Service": "WhatsApp",
+                "Contact": "+231 777 300 444"
+            },
+            "Call": {
+                "Service": "Phone",
                 "Contact": "+231 777 300 444"
             }
         }
     },
     "☎️ Hotlines": {
-        "description": "Call for help with urgent SRHR issues.",
+        "description": "Emergency Lines",
         "options": {
             "SRHR Emergency Line": {
+                "Service": "24/7 hotline",
+                "Contact": "0777 911 911"
+            },
+            "Confidential Line": {
+                "Service": "24/7 hotline",
+                "Contact": "0777 911 911"
+            },
+            "Rescue Line": {
+                "Service": "24/7 hotline",
+                "Contact": "0777 911 911"
+            },
+            "Ambulance Line": {
                 "Service": "24/7 hotline",
                 "Contact": "0777 911 911"
             }
@@ -140,7 +199,7 @@ with st.sidebar:
 
     if selected_help_category:
         cat = help_categories[selected_help_category]
-        st.markdown(f"**{cat['description']}**")
+        st.markdown(f"**{cat['description']}:**")
 
         selected_option = st.selectbox(
             f"Available in {selected_help_category}:",
@@ -161,6 +220,16 @@ with st.sidebar:
                 st.session_state.chat_history.append(("Bot", bot_message))
 
             st.markdown("---")
+    st.markdown("---")
+    st.subheader("📄 Resources")
+    with open("assets/Accelerated-Action-for-the-Health-of-Adolescents.pdf", "rb") as pdf_file:
+        st.download_button(
+            label="📥 Download WHO SRH Guide",
+            data=pdf_file,
+            file_name="Accelerated-Action-for-the-Health-of-Adolescents.pdf",
+            mime="application/pdf",
+            help="Click to download the WHO guide on SRH"
+        )
 
 # Show topic in chat if toggled
 if st.session_state.active_topic and st.session_state.active_topic != st.session_state.last_topic_rendered:
