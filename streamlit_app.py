@@ -46,7 +46,7 @@ if "last_topic_rendered" not in st.session_state:
 
 # Emoji prompt & cycle state
 if "active_prompt" not in st.session_state:
-    # {"key":"...", "emoji":"🩸", "type":"yesno", "question":"...", "show_ui": bool}
+    # {"key":"...", "emoji":"🩸", "type":"yesno|ack|input", "question":"...", "show_ui": bool}
     st.session_state.active_prompt = None
 if "period_log" not in st.session_state:
     st.session_state.period_log = []       # [{"start": date}]
@@ -188,97 +188,239 @@ help_categories = {
 }
 
 # -------------------------
-# Emoji → Prompt dictionary
+# GROUPED EMOJI DICTIONARY (for UI) + ACTION MAPPING (behavior types)
 # -------------------------
-emoji_prompts = {
-    # Menstrual Cycle Tracking
-    "🩸": {"key": "period_start", "type": "yesno", "question": "Is this the first day of your period?"},
-    "📅": {"key": "check_cycle",  "type": "yesno", "question": "Do you want me to check your cycle and predict the next period?"},
-    "🌸": {"key": "fertile_window","type": "yesno","question": "Are you checking for your fertile window?"},
-    "🔴": {"key": "flow_heavy",   "type": "yesno", "question": "Log today as **heavy flow**?"},
-    "🟠": {"key": "flow_medium",  "type": "yesno", "question": "Log today as **medium flow**?"},
-    "🟢": {"key": "flow_light",   "type": "yesno", "question": "Log today as **light flow**?"},
-    # Symptoms (examples)
-    "🤕": {"key": "sym_headache", "type": "yesno", "question": "Headache today — want simple relief tips?"},
-    "😣": {"key": "sym_cramps",   "type": "yesno", "question": "Cramps or body pain — want safe pain relief ideas?"},
-    # SRHR Awareness (examples)
-    "🛡": {"key": "safe_practice","type": "yesno", "question": "Want to learn about safe practices and protection?"},
-    "💊": {"key": "contraceptive","type": "yesno", "question": "Want quick info on contraceptive options?"}
+emoji_prompts_grouped = {
+    "Menstrual Cycle Tracking": {
+        "🩸": "Is this the first day of your period?",
+        "🩷": "Your period seems to be ending or light flow.",
+        "📅": "Check your cycle and predict your next period.",
+        "🌸": "This marks your fertile window or ovulation.",
+        "🔴": "You reported a heavy flow today.",
+        "🟠": "You reported a medium flow today.",
+        "🟢": "Light flow — period may be ending."
+    },
+    "Menstrual Symptoms": {
+        "🤕": "Headache or migraine — do you need tips for relief?",
+        "🤢": "Feeling nauseous — want gentle care suggestions?",
+        "🤒": "Fever or feeling unwell — consider rest and hydration.",
+        "😣": "Cramps or body pain — want safe pain relief ideas?",
+        "😴": "Fatigue or low energy — let’s talk simple self-care."
+    },
+    "Menstrual Hygiene & Care": {
+        "🩲": "Remember to change pads/underwear regularly.",
+        "🛁": "Bathing and personal hygiene help you feel better.",
+        "🧼": "Wash your hands to stay clean and safe.",
+        "🪥": "Daily hygiene reminder helps overall health.",
+        "🧻": "Keep tissue or supplies handy for cleanliness."
+    },
+    "SRHR Awareness & Protection": {
+        "🛡": "Let’s talk about safe practices and protection.",
+        "💊": "Contraceptives/medication — want to learn safe options?",
+        "🩺": "You can visit a clinic/provider for support.",
+        "🚫": "Not safe — it’s okay to say no.",
+        "❓": "Ask any SRHR question — I’m here to help."
+    },
+    "Mental & Emotional Well-being": {
+        "🙂": "Feeling okay — great! Want wellbeing tips?",
+        "😔": "Feeling low — want a few mood-lifting ideas?",
+        "😡": "Feeling frustrated — want calm-down steps?",
+        "🆘": "Need urgent help — I can share hotlines/resources.",
+        "📞": "Prefer to talk to a counselor? I can share contacts."
+    }
 }
 
+# behavior types: yesno (buttons), ack (OK only), input (text box + send)
+emoji_to_action = {
+    # Cycle tracking
+    "🩸": {"key": "period_start", "type": "yesno"},
+    "🩷": {"key": "flow_light", "type": "yesno"},  # treat as light/end day log
+    "📅": {"key": "check_cycle", "type": "yesno"},
+    "🌸": {"key": "fertile_window", "type": "yesno"},
+    "🔴": {"key": "flow_heavy", "type": "yesno"},
+    "🟠": {"key": "flow_medium", "type": "yesno"},
+    "🟢": {"key": "flow_light", "type": "yesno"},
+    # Symptoms (ask if they want tips)
+    "🤕": {"key": "sym_headache", "type": "yesno"},
+    "🤢": {"key": "sym_nausea", "type": "yesno"},
+    "🤒": {"key": "sym_fever", "type": "yesno"},
+    "😣": {"key": "sym_cramps", "type": "yesno"},
+    "😴": {"key": "sym_fatigue", "type": "yesno"},
+    # Hygiene & care (simple acknowledgement)
+    "🩲": {"key": "care_underwear", "type": "ack"},
+    "🛁": {"key": "care_bath", "type": "ack"},
+    "🧼": {"key": "care_wash", "type": "ack"},
+    "🪥": {"key": "care_toothbrush", "type": "ack"},
+    "🧻": {"key": "care_tissue", "type": "ack"},
+    # SRHR awareness (info/ack) and open-ended question
+    "🛡": {"key": "safe_practice", "type": "ack"},
+    "💊": {"key": "contraceptive", "type": "ack"},
+    "🩺": {"key": "visit_clinic", "type": "ack"},
+    "🚫": {"key": "say_no", "type": "ack"},
+    "❓": {"key": "ask_info", "type": "input"},
+    # Wellbeing
+    "🙂": {"key": "mood_ok", "type": "ack"},
+    "😔": {"key": "mood_low", "type": "yesno"},
+    "😡": {"key": "mood_angry", "type": "yesno"},
+    "🆘": {"key": "sos", "type": "ack"},
+    "📞": {"key": "call_counselor", "type": "ack"},
+}
+
+def get_question_for_emoji(emoji: str) -> str:
+    for _, mapping in emoji_prompts_grouped.items():
+        if emoji in mapping:
+            return mapping[emoji]
+    return "Would you like to proceed?"
+
 # -------------------------
-# Prompt helpers (UI-only rendering)
+# Prompt helpers (UI under the user's emoji)
 # -------------------------
-def begin_prompt_for_emoji(emoji: str, *, show_ui: bool):
-    """Create an active prompt; for this UX we only render UI (no chat line)."""
-    if emoji in emoji_prompts:
-        cfg = emoji_prompts[emoji]
+def begin_prompt_for_emoji(emoji: str):
+    """Create an active prompt; we render UI (no extra chat line) under the user's emoji."""
+    if emoji in emoji_to_action:
+        cfg = emoji_to_action[emoji]
         st.session_state.active_prompt = {
             "key": cfg["key"],
             "emoji": emoji,
-            "type": cfg["type"],
-            "question": cfg["question"],
-            "show_ui": show_ui,
+            "type": cfg["type"],       # yesno | ack | input
+            "question": get_question_for_emoji(emoji),
+            "show_ui": True,
         }
+
+def _post_simple_message(msg: str):
+    st.session_state.chat_history.append(("Bot", msg))
 
 def _handle_prompt_yes(p):
     today = date.today()
-    if p["key"] == "period_start":
+    k = p["key"]
+
+    # Core tracking features
+    if k == "period_start":
         st.session_state.period_log.append({"start": today})
         next_period = today + timedelta(days=st.session_state.cycle_length_days)
-        st.session_state.chat_history.append(("Bot",
+        _post_simple_message(
             f"🩸 Logged **period start** for **{today.strftime('%b %d, %Y')}**.\n"
             f"📅 Estimated **next period**: **{next_period.strftime('%b %d, %Y')}** "
             f"(~{st.session_state.cycle_length_days}-day cycle)."
-        ))
-    elif p["key"] in {"flow_heavy","flow_medium","flow_light"}:
-        flow_map = {"flow_heavy":"heavy","flow_medium":"medium","flow_light":"light"}
-        st.session_state.flow_log.append({"date": today, "flow": flow_map[p["key"]]})
-        st.session_state.chat_history.append(("Bot",
-            f"🗓 Logged **{flow_map[p['key']]} flow** for **{today.strftime('%b %d, %Y')}**."
-        ))
-    elif p["key"] == "check_cycle":
+        )
+    elif k in {"flow_heavy", "flow_medium", "flow_light"}:
+        flow_name = {"flow_heavy":"heavy","flow_medium":"medium","flow_light":"light"}[k]
+        st.session_state.flow_log.append({"date": today, "flow": flow_name})
+        _post_simple_message(f"🗓 Logged **{flow_name} flow** for **{today.strftime('%b %d, %Y')}**.")
+    elif k == "check_cycle":
         if st.session_state.period_log:
             last_start = st.session_state.period_log[-1]["start"]
             next_period = last_start + timedelta(days=st.session_state.cycle_length_days)
-            st.session_state.chat_history.append(("Bot",
+            _post_simple_message(
                 f"Last start: **{last_start.strftime('%b %d, %Y')}**.\n"
                 f"📅 Estimated **next period**: **{next_period.strftime('%b %d, %Y')}**."
-            ))
+            )
         else:
-            st.session_state.chat_history.append(("Bot", "I need a start date. Type **🩸** to log it."))
-    elif p["key"] == "fertile_window":
+            _post_simple_message("I need a start date. Type **🩸** to log it.")
+    elif k == "fertile_window":
         if st.session_state.period_log:
             last_start = st.session_state.period_log[-1]["start"]
             ovulation = last_start + timedelta(days=14)
-            st.session_state.chat_history.append(("Bot",
+            _post_simple_message(
                 f"🌸 Estimated fertile window around **{ovulation.strftime('%b %d, %Y')}** (varies by person)."
-            ))
+            )
         else:
-            st.session_state.chat_history.append(("Bot", "Type **🩸** to log your last start first."))
-    elif p["key"] in {"sym_headache","sym_cramps"}:
-        tips = "• Rest and hydrate\n• Warm compress on lower belly or back\n• If pain is strong, consider safe pain relief and talk to a clinic"
-        st.session_state.chat_history.append(("Bot", f"Here are simple tips:\n{tips}"))
-    elif p["key"] == "safe_practice":
-        st.session_state.chat_history.append(("Bot", "Use condoms correctly every time. If unsure, ask a clinic or trusted adult."))
-    elif p["key"] == "contraceptive":
-        st.session_state.chat_history.append(("Bot", "There are many safe options (pill, implant, injection, condoms). A clinic can help you choose."))
+            _post_simple_message("Type **🩸** to log your last start first.")
+
+    # Symptom support tips
+    elif k in {"sym_headache","sym_nausea","sym_fever","sym_cramps","sym_fatigue"}:
+        tips_map = {
+            "sym_headache": "• Rest and hydrate\n• Quiet, dim space\n• If strong, consider safe pain relief and talk to a clinic",
+            "sym_nausea":  "• Sip water slowly\n• Light foods (plain crackers)\n• Rest; if severe, talk to a clinic",
+            "sym_fever":   "• Rest and fluids\n• Light clothes\n• If high fever or lasting, visit a clinic",
+            "sym_cramps":  "• Warm compress on belly/back\n• Gentle stretching\n• Safe pain relief if needed",
+            "sym_fatigue": "• Rest and regular meals\n• Gentle movement\n• Talk to someone you trust"
+        }
+        _post_simple_message(f"Here are simple tips:\n{tips_map[k]}")
+
+    # Wellbeing yes/no (offer tips on Yes)
+    elif k == "mood_low":
+        _post_simple_message("Small steps help: deep breaths, a short walk, or talk to someone you trust.")
+    elif k == "mood_angry":
+        _post_simple_message("Try a cool-down: breathe in 4s, out 6s, repeat. We can talk it through if you want.")
+
+    st.session_state.active_prompt = None
+
+def _handle_prompt_ack(p):
+    k = p["key"]
+    # Hygiene & care acknowledgements / info nudges
+    if k in {"care_underwear","care_bath","care_wash","care_toothbrush","care_tissue"}:
+        tips = {
+            "care_underwear": "Change pads/underwear regularly to stay comfortable and clean.",
+            "care_bath": "A warm bath and gentle cleaning can help you feel better.",
+            "care_wash": "Wash your hands with soap and water to prevent infections.",
+            "care_toothbrush": "Daily brushing keeps your mouth healthy.",
+            "care_tissue": "Keep tissue and supplies ready for cleanliness."
+        }[k]
+        _post_simple_message(tips)
+    elif k == "safe_practice":
+        _post_simple_message("Use condoms correctly every time. If unsure, a clinic can show you how.")
+    elif k == "contraceptive":
+        _post_simple_message("There are many safe options (pill, implant, injection, condoms). A clinic can help you choose.")
+    elif k == "visit_clinic":
+        _post_simple_message("Check **📞 Where to Get Help** in the sidebar to find clinics and contacts.")
+    elif k == "say_no":
+        _post_simple_message("Your body, your choice. It’s okay to say no. If you feel unsafe, use the hotlines in the help menu.")
+    elif k == "mood_ok":
+        _post_simple_message("Glad you’re feeling okay 😊. Want a quick self-care tip today?")
+    elif k == "sos":
+        _post_simple_message("If it’s urgent, please call the hotlines in **📞 Where to Get Help**. I can also share options here.")
+    elif k == "call_counselor":
+        _post_simple_message("You can reach a counselor via the contacts listed in **📞 Where to Get Help**.")
     st.session_state.active_prompt = None
 
 def _handle_prompt_no(p):
-    st.session_state.chat_history.append(("Bot", "Okay 👍. You can choose another emoji or ask a question."))
+    _post_simple_message("Okay 👍. You can choose another emoji or ask a question.")
     st.session_state.active_prompt = None
 
 def render_active_prompt_ui():
     p = st.session_state.active_prompt
     if not p or not p.get("show_ui", False):
         return
+
     st.markdown(f"**{p['emoji']} {p['question']}**")
-    c1, c2 = st.columns(2)
-    if c1.button("✅ Yes", key="prompt_yes_icon"):
-        _handle_prompt_yes(p)
-    if c2.button("❌ No", key="prompt_no_icon"):
-        _handle_prompt_no(p)
+
+    # YES/NO
+    if p["type"] == "yesno":
+        c1, c2 = st.columns(2)
+        if c1.button("✅ Yes", key="prompt_yes_icon"):
+            _handle_prompt_yes(p)
+            return
+        if c2.button("❌ No", key="prompt_no_icon"):
+            _handle_prompt_no(p)
+            return
+
+    # ACKNOWLEDGE (OK only)
+    elif p["type"] == "ack":
+        if st.button("OK 👍", key="prompt_ack_ok"):
+            _handle_prompt_ack(p)
+            return
+
+    # INPUT (text + send)
+    elif p["type"] == "input":
+        user_q = st.text_input("Type your question here:", key="prompt_input_box")
+        send = st.button("Send ✉️", key="prompt_input_send")
+        if send and user_q.strip():
+            # Push as user message, get GPT reply, then clear prompt
+            st.session_state.chat_history.append(("You", user_q.strip()))
+            with st.spinner("Thinking..."):
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You're a friendly, respectful chatbot helping Liberian adolescents with health and SRH-related questions."}
+                    ] + [
+                        {"role": "user" if sender == "You" else "assistant", "content": msg}
+                        for sender, msg in st.session_state.chat_history
+                    ]
+                )
+                answer = response.choices[0].message.content
+                st.session_state.chat_history.append(("Bot", answer))
+            st.session_state.active_prompt = None
 
 # -------------------------
 # Sidebar
@@ -318,19 +460,19 @@ with st.sidebar:
                 st.session_state.chat_history.append(("Bot", bot_message))
             st.markdown("---")
 
-    # Emoji grid (click = UI prompt only, no chat question)
+    # Grouped Emoji grid (click = UI prompt right under user emoji)
     st.subheader("🩺 Quick SRHR Actions")
-    emoji_rows = [
-        ["🩸", "📅", "🌸", "🔴", "🟠", "🟢"],
-        ["🤕", "😣"],
-        ["🛡", "💊"]
-    ]
-    for row_i, row in enumerate(emoji_rows):
-        cols = st.columns(len(row))
-        for i, emoji in enumerate(row):
-            if cols[i].button(emoji, key=f"emoji-row{row_i}-{i}"):
-                st.session_state.chat_history.append(("You", emoji))
-                begin_prompt_for_emoji(emoji, show_ui=True)
+    for group_title, mapping in emoji_prompts_grouped.items():
+        st.caption(f"**{group_title}**")
+        emojis = list(mapping.keys())
+        row_size = 6
+        for i in range(0, len(emojis), row_size):
+            row = emojis[i:i+row_size]
+            cols = st.columns(len(row))
+            for j, emoji in enumerate(row):
+                if cols[j].button(emoji, key=f"emoji-{group_title}-{i+j}"):
+                    st.session_state.chat_history.append(("You", emoji))
+                    begin_prompt_for_emoji(emoji)
 
     # Period Settings
     st.markdown("---")
@@ -458,10 +600,10 @@ user_input = st.chat_input("Start the conversation...")
 if user_input:
     st.session_state.chat_history.append(("You", user_input))
 
-    # If the user typed a defined emoji, start the UI prompt (no extra chat question)
-    typed_emoji = next((e for e in emoji_prompts.keys() if e in user_input), None)
+    # If the user typed a defined emoji, start the appropriate UI prompt
+    typed_emoji = next((e for m in emoji_prompts_grouped.values() for e in m.keys() if e in user_input), None)
     if typed_emoji:
-        begin_prompt_for_emoji(typed_emoji, show_ui=True)
+        begin_prompt_for_emoji(typed_emoji)
     else:
         # Normal GPT fallback
         with st.spinner("Thinking..."):
@@ -485,7 +627,7 @@ with st.container():
         with st.chat_message("user" if sender == "You" else "assistant"):
             st.markdown(msg)
 
-    # Render active prompt UI as the next assistant bubble so it appears right under the user's emoji
+    # Render active prompt UI as the next assistant bubble so it appears under the user's emoji
     if st.session_state.active_prompt and st.session_state.active_prompt.get("show_ui", False):
         with st.chat_message("assistant"):
             render_active_prompt_ui()
