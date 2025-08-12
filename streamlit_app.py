@@ -44,9 +44,9 @@ if "active_topic" not in st.session_state:
 if "last_topic_rendered" not in st.session_state:
     st.session_state.last_topic_rendered = None
 
-# Emoji prompt & cycle state
+# Prompt + cycle state
 if "active_prompt" not in st.session_state:
-    # {"key":"...", "emoji":"🩸", "type":"yesno|ack|input", "question":"...", "show_ui": bool}
+    # {"id": "...", "key": "...", "emoji": "🩸", "type": "yesno|ack|input", "question": "...", "show_ui": bool}
     st.session_state.active_prompt = None
 if "period_log" not in st.session_state:
     st.session_state.period_log = []       # [{"start": date}]
@@ -73,107 +73,45 @@ help_categories = {
     "🏥 Health Clinics": {
         "description": "Visit a nearby clinic for personal and private care.",
         "options": {
-            "Hope For Women": {
-                "Location": "Paynesvillie",
-                "Services": "SRH Counseling, Contraceptives, Mental Health",
-                "Contact": "Nurse Martha – 0778 123 456"
-            },
-            "ELWA Hospital": {
-                "Location": "Paynesvillie",
-                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
-                "Contact": "Dr. Massa – 0886 555 789"
-            },
-            "JFK": {
-                "Location": "Sinkor",
-                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
-                "Contact": "Mr. Gbessay – 0886 555 789"
-            },
-            "Catholic Hospital": {
-                "Location": "Congo Town",
-                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
-                "Contact": "St. Theresa – 0886 555 789"
-            },
-            "SOS Hospital": {
-                "Location": "Congo Town",
-                "Services": "STI Testing, Pregnancy Support, Peer Counseling",
-                "Contact": "Mrs. Jallah – 0886 555 789"
-            }
+            "Hope For Women": {"Location": "Paynesvillie", "Services": "SRH Counseling, Contraceptives, Mental Health", "Contact": "Nurse Martha – 0778 123 456"},
+            "ELWA Hospital": {"Location": "Paynesvillie", "Services": "STI Testing, Pregnancy Support, Peer Counseling", "Contact": "Dr. Massa – 0886 555 789"},
+            "JFK": {"Location": "Sinkor", "Services": "STI Testing, Pregnancy Support, Peer Counseling", "Contact": "Mr. Gbessay – 0886 555 789"},
+            "Catholic Hospital": {"Location": "Congo Town", "Services": "STI Testing, Pregnancy Support, Peer Counseling", "Contact": "St. Theresa – 0886 555 789"},
+            "SOS Hospital": {"Location": "Congo Town", "Services": "STI Testing, Pregnancy Support, Peer Counseling", "Contact": "Mrs. Jallah – 0886 555 789"}
         }
     },
     "🏫 School Support": {
         "description": "Talk to a school nurse.",
         "options": {
-            "J.J Robert": {
-                "Location": "Sinkor",
-                "Contact": "Madam Teta – School Counselor – 0777 002 334"
-            },
-            "Tubman High": {
-                "Location": "Sinkor",
-                "Contact": "Mrs. Kpaye – Health Club Focal – 0888 998 123"
-            },
-            "Voka Mission": {
-                "Location": "Paynesvillie",
-                "Contact": "Mrs. Leo – Health Club Focal – 0888 998 123"
-            },
-            "Best Brain": {
-                "Location": "Rehab",
-                "Contact": "Mrs. Jerome – Health Club Focal – 0888 998 123"
-            }
+            "J.J Robert": {"Location": "Sinkor", "Contact": "Madam Teta – School Counselor – 0777 002 334"},
+            "Tubman High": {"Location": "Sinkor", "Contact": "Mrs. Kpaye – Health Club Focal – 0888 998 123"},
+            "Voka Mission": {"Location": "Paynesvillie", "Contact": "Mrs. Leo – Health Club Focal – 0888 998 123"},
+            "Best Brain": {"Location": "Rehab", "Contact": "Mrs. Jerome – Health Club Focal – 0888 998 123"}
         }
     },
     "🤝 NGOs": {
         "description": "NGOs provide youth-friendly, sometimes free services.",
         "options": {
-            "Restore Hope Liberia": {
-                "Location": "Voinjama",
-                "Contact": "Joyce Bayo – SRHR Officer – 0777 456 789"
-            },
-            "Liberia Youth Network": {
-                "Location": "Monrovia (online too)",
-                "Contact": "WhatsApp +231 777 111 222"
-            },
-            "Plan Liberia": {
-                "Location": "Monrovia (online too)",
-                "Contact": "WhatsApp +231 777 111 222"
-            },
-            "CSI": {
-                "Location": "Monrovia (online too)",
-                "Contact": "WhatsApp +231 777 111 222"
-            }
+            "Restore Hope Liberia": {"Location": "Voinjama", "Contact": "Joyce Bayo – SRHR Officer – 0777 456 789"},
+            "Liberia Youth Network": {"Location": "Monrovia (online too)", "Contact": "WhatsApp +231 777 111 222"},
+            "Plan Liberia": {"Location": "Monrovia (online too)", "Contact": "WhatsApp +231 777 111 222"},
+            "CSI": {"Location": "Monrovia (online too)", "Contact": "WhatsApp +231 777 111 222"}
         }
     },
     "🌐 Online Platforms": {
         "description": "Chat or email health workers online.",
         "options": {
-            "Ask-A-Nurse Liberia": {
-                "Platform": "WhatsApp Chat",
-                "Contact": "+231 770 000 111"
-            },
-            "Email": {
-                "Platform": "Gmail",
-                "Contact": "sos@girlzapp1.com"
-            },
-            "GirlTalk": {
-                "Platform": "Web Chat",
-                "Contact": "https://girlzapp1.streamlit.app/"
-            }
+            "Ask-A-Nurse Liberia": {"Platform": "WhatsApp Chat", "Contact": "+231 770 000 111"},
+            "Email": {"Platform": "Gmail", "Contact": "sos@girlzapp1.com"},
+            "GirlTalk": {"Platform": "Web Chat", "Contact": "https://girlzapp1.streamlit.app/"}
         }
     },
     "📱 Telemedicine": {
         "description": "Call or video-chat a provider if you can’t visit. Consultations are private and confidential.",
         "options": {
-            "DKT Healthline": {
-                "Service": "Phone & WhatsApp consultation",
-                "Contact": "+231 777 300 444"
-            },
-            "Video Chat": {
-                "Service": "WhatsApp",
-                "Contact": "+231 777 300 444"
-            },
-            "Call": {
-                "Service": "Phone",
-                "Contact": "+231 777 300 444"
-            }
+            "DKT Healthline": {"Service": "Phone & WhatsApp consultation", "Contact": "+231 777 300 444"},
+            "Video Chat": {"Service": "WhatsApp", "Contact": "+231 777 300 444"},
+            "Call": {"Service": "Phone", "Contact": "+231 777 300 444"}
         }
     },
     "☎️ Hotlines": {
@@ -188,7 +126,7 @@ help_categories = {
 }
 
 # -------------------------
-# GROUPED EMOJI DICTIONARY (for UI) + ACTION MAPPING (behavior types)
+# GROUPED EMOJI DICTIONARY (UI text) + ACTION TYPES
 # -------------------------
 emoji_prompts_grouped = {
     "Menstrual Cycle Tracking": {
@@ -273,13 +211,14 @@ def get_question_for_emoji(emoji: str) -> str:
     return "Would you like to proceed?"
 
 # -------------------------
-# Prompt helpers (UI under the user's emoji)
+# Prompt helpers (SINGLE-CLICK via callbacks)
 # -------------------------
 def begin_prompt_for_emoji(emoji: str):
-    """Create an active prompt; we render UI (no extra chat line) under the user's emoji."""
+    """Create an active prompt with a unique id; UI renders under the user's emoji."""
     if emoji in emoji_to_action:
         cfg = emoji_to_action[emoji]
         st.session_state.active_prompt = {
+            "id": f"{emoji}-{int(datetime.now().timestamp()*1000)}",  # unique per prompt
             "key": cfg["key"],
             "emoji": emoji,
             "type": cfg["type"],       # yesno | ack | input
@@ -290,7 +229,13 @@ def begin_prompt_for_emoji(emoji: str):
 def _post_simple_message(msg: str):
     st.session_state.chat_history.append(("Bot", msg))
 
-def _handle_prompt_yes(p):
+def _finalize_and_rerun():
+    st.rerun()
+
+def _handle_prompt_yes_cb(prompt_id: str):
+    p = st.session_state.get("active_prompt")
+    if not p or p.get("id") != prompt_id:
+        return
     today = date.today()
     k = p["key"]
 
@@ -321,9 +266,7 @@ def _handle_prompt_yes(p):
         if st.session_state.period_log:
             last_start = st.session_state.period_log[-1]["start"]
             ovulation = last_start + timedelta(days=14)
-            _post_simple_message(
-                f"🌸 Estimated fertile window around **{ovulation.strftime('%b %d, %Y')}** (varies by person)."
-            )
+            _post_simple_message(f"🌸 Estimated fertile window around **{ovulation.strftime('%b %d, %Y')}** (varies by person).")
         else:
             _post_simple_message("Type **🩸** to log your last start first.")
 
@@ -345,10 +288,21 @@ def _handle_prompt_yes(p):
         _post_simple_message("Try a cool-down: breathe in 4s, out 6s, repeat. We can talk it through if you want.")
 
     st.session_state.active_prompt = None
+    _finalize_and_rerun()
 
-def _handle_prompt_ack(p):
+def _handle_prompt_no_cb(prompt_id: str):
+    p = st.session_state.get("active_prompt")
+    if not p or p.get("id") != prompt_id:
+        return
+    _post_simple_message("Okay 👍. You can choose another emoji or ask a question.")
+    st.session_state.active_prompt = None
+    _finalize_and_rerun()
+
+def _handle_prompt_ack_cb(prompt_id: str):
+    p = st.session_state.get("active_prompt")
+    if not p or p.get("id") != prompt_id:
+        return
     k = p["key"]
-    # Hygiene & care acknowledgements / info nudges
     if k in {"care_underwear","care_bath","care_wash","care_toothbrush","care_tissue"}:
         tips = {
             "care_underwear": "Change pads/underwear regularly to stay comfortable and clean.",
@@ -373,41 +327,31 @@ def _handle_prompt_ack(p):
     elif k == "call_counselor":
         _post_simple_message("You can reach a counselor via the contacts listed in **📞 Where to Get Help**.")
     st.session_state.active_prompt = None
-
-def _handle_prompt_no(p):
-    _post_simple_message("Okay 👍. You can choose another emoji or ask a question.")
-    st.session_state.active_prompt = None
+    _finalize_and_rerun()
 
 def render_active_prompt_ui():
-    p = st.session_state.active_prompt
+    p = st.session_state.get("active_prompt")
     if not p or not p.get("show_ui", False):
         return
-
+    pid = p["id"]
     st.markdown(f"**{p['emoji']} {p['question']}**")
 
-    # YES/NO
     if p["type"] == "yesno":
         c1, c2 = st.columns(2)
-        if c1.button("✅ Yes", key="prompt_yes_icon"):
-            _handle_prompt_yes(p)
-            return
-        if c2.button("❌ No", key="prompt_no_icon"):
-            _handle_prompt_no(p)
-            return
-
-    # ACKNOWLEDGE (OK only)
+        c1.button("✅ Yes", key=f"yes-{pid}", on_click=_handle_prompt_yes_cb, args=(pid,), use_container_width=True)
+        c2.button("❌ No",  key=f"no-{pid}",  on_click=_handle_prompt_no_cb,  args=(pid,), use_container_width=True)
     elif p["type"] == "ack":
-        if st.button("OK 👍", key="prompt_ack_ok"):
-            _handle_prompt_ack(p)
-            return
-
-    # INPUT (text + send)
+        st.button("OK 👍", key=f"ok-{pid}", on_click=_handle_prompt_ack_cb, args=(pid,), use_container_width=True)
     elif p["type"] == "input":
-        user_q = st.text_input("Type your question here:", key="prompt_input_box")
-        send = st.button("Send ✉️", key="prompt_input_send")
-        if send and user_q.strip():
-            # Push as user message, get GPT reply, then clear prompt
-            st.session_state.chat_history.append(("You", user_q.strip()))
+        st.text_input("Type your question here:", key=f"input-{pid}")
+        def _send_input_cb(prompt_id: str):
+            pp = st.session_state.get("active_prompt")
+            if not pp or pp.get("id") != prompt_id:
+                return
+            q = st.session_state.get(f"input-{prompt_id}", "").strip()
+            if not q:
+                return
+            st.session_state.chat_history.append(("You", q))
             with st.spinner("Thinking..."):
                 response = client.chat.completions.create(
                     model="gpt-4",
@@ -421,6 +365,8 @@ def render_active_prompt_ui():
                 answer = response.choices[0].message.content
                 st.session_state.chat_history.append(("Bot", answer))
             st.session_state.active_prompt = None
+            _finalize_and_rerun()
+        st.button("Send ✉️", key=f"send-{pid}", on_click=_send_input_cb, args=(pid,), use_container_width=True)
 
 # -------------------------
 # Sidebar
