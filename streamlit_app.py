@@ -461,7 +461,7 @@ with st.sidebar:
             st.markdown("---")
 
     # Grouped Emoji grid (click = UI prompt right under user emoji)
-    st.subheader("🩺 Quick SRHR Actions")
+    st.subheader("🩺 SRHR Prompts")
     for group_title, mapping in emoji_prompts_grouped.items():
         st.caption(f"**{group_title}**")
         emojis = list(mapping.keys())
